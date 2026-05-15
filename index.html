@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="is">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Upprifjun í málfræði – 7. bekkur</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f0ea;
+    --card: #ffffff;
+    --text: #2c2c2c;
+    --muted: #6b6560;
+    --accent: #c4553a;
+    --accent-light: #f8e8e4;
+    --blue: #2b6cb0;
+    --blue-light: #e0edff;
+    --green: #276749;
+    --green-light: #e0f5ea;
+    --purple: #6b46c1;
+    --purple-light: #ede9f6;
+    --border: #e2dcd5;
+    --correct: #276749;
+    --incorrect: #c4553a;
+    --noun-blue: #2b6cb0;
+    --verb-green: #276749;
+    --adj-red: #c4553a;
+    --radius: 12px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.65;
+    padding: 0 1rem 4rem;
+  }
+
+  header {
+    text-align: center;
+    padding: 3rem 1rem 2rem;
+    max-width: 700px;
+    margin: 0 auto;
+  }
+
+  header h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(1.8rem, 5vw, 2.6rem);
+    color: var(--text);
+    letter-spacing: -0.02em;
+    margin-bottom: 0.3rem;
+  }
+
+  header .subtitle {
+    font-size: 1.05rem;
+    color: var(--muted);
+    font-weight: 500;
+  }
+
+  .progress-bar {
+    max-width: 700px;
+    margin: 0 auto 2rem;
+    background: var(--border);
+    border-radius: 20px;
+    height: 8px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), #e07a5f);
+    border-radius: 20px;
+    width: 0%;
+    transition: width 0.6s ease;
+  }
+
+  .exercise {
+    max-width: 700px;
+    margin: 0 auto 1.5rem;
+    background: var(--card);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+
+  .exercise-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1.1rem 1.5rem;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.15s;
+  }
+
+  .exercise-header:hover { background: #faf8f5; }
+
+  .exercise-num {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--accent-light);
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+  }
+
+  .exercise-num.done {
+    background: var(--green-light);
+    color: var(--green);
+  }
+
+  .exercise-title {
+    font-weight: 600;
+    font-size: 1rem;
+    flex: 1;
+  }
+
+  .chevron {
+    transition: transform 0.3s;
+    color: var(--muted);
+    font-size: 1.2rem;
+  }
+
+  .exercise.open .chevron { transform: rotate(180deg); }
+
+  .exercise-body {
+    display: none;
+    padding: 0 1.5rem 1.5rem;
+  }
+
+  .exercise.open .exercise-body { display: block; }
+
+  .instructions {
+    font-size: 0.92rem;
+    color: var(--muted);
+    margin-bottom: 1rem;
+    line-height: 1.6;
+    padding: 0.8rem 1rem;
+    background: #faf8f5;
+    border-radius: 8px;
+    border-left: 3px solid var(--accent);
+  }
+
+  .instructions strong { color: var(--text); }
+
+  .input-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.6rem;
+    flex-wrap: wrap;
+  }
+
+  .input-row label {
+    font-weight: 500;
+    min-width: 120px;
+    font-size: 0.95rem;
+  }
+
+  .input-row input[type="text"] {
+    flex: 1;
+    min-width: 140px;
+    padding: 0.5rem 0.75rem;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 0.95rem;
+    transition: border-color 0.2s;
+    background: #faf8f5;
+  }
+
+  .input-row input:focus {
+    outline: none;
+    border-color: var(--accent);
+    background: #fff;
+  }
+
+  input.correct { border-color: var(--correct) !important; background: var(--green-light) !important; }
+  input.incorrect { border-color: var(--incorrect) !important; background: #fef0ee !important; }
+
+  .feedback {
+    font-size: 0.82rem;
+    font-weight: 600;
+    min-width: 20px;
+  }
+
+  .feedback.ok { color: var(--correct); }
+  .feedback.no { color: var(--incorrect); }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.6rem 1.3rem;
+    border: none;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .btn-check {
+    background: var(--accent);
+    color: #fff;
+  }
+
+  .btn-check:hover { background: #a8432d; }
+
+  .btn-show {
+    background: var(--blue-light);
+    color: var(--blue);
+  }
+
+  .btn-show:hover { background: #cde0ff; }
+
+  .btn-row {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+  }
+
+  /* Tables */
+  .grammar-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+    font-size: 0.9rem;
+  }
+
+  .grammar-table th {
+    background: var(--accent-light);
+    color: var(--accent);
+    font-weight: 600;
+    padding: 0.6rem 0.5rem;
+    text-align: center;
+    border: 1px solid var(--border);
+    font-size: 0.85rem;
+  }
+
+  .grammar-table td {
+    padding: 0.4rem;
+    border: 1px solid var(--border);
+    text-align: center;
+    vertical-align: middle;
+  }
+
+  .grammar-table td.label-cell {
+    font-weight: 600;
+    background: #faf8f5;
+    text-align: left;
+    padding-left: 0.7rem;
+  }
+
+  .grammar-table input {
+    width: 100%;
+    padding: 0.35rem 0.4rem;
+    border: 1.5px solid var(--border);
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 0.88rem;
+    text-align: center;
+    background: #faf8f5;
+  }
+
+  .grammar-table input:focus {
+    outline: none;
+    border-color: var(--accent);
+    background: #fff;
+  }
+
+  /* Textarea */
+  textarea.answer-area {
+    width: 100%;
+    min-height: 70px;
+    padding: 0.7rem 0.85rem;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    resize: vertical;
+    background: #faf8f5;
+    margin-bottom: 0.3rem;
+  }
+
+  textarea.answer-area:focus {
+    outline: none;
+    border-color: var(--accent);
+    background: #fff;
+  }
+
+  .reveal-box {
+    display: none;
+    padding: 0.8rem 1rem;
+    background: var(--green-light);
+    border-radius: 8px;
+    margin-top: 0.5rem;
+    font-size: 0.92rem;
+    line-height: 1.7;
+    border-left: 3px solid var(--green);
+  }
+
+  .reveal-box strong { color: var(--green); }
+
+  /* Word tagger */
+  .text-block {
+    line-height: 2.2;
+    font-size: 1rem;
+    padding: 1rem;
+    background: #faf8f5;
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+  }
+
+  .taggable {
+    display: inline-block;
+    padding: 0.15rem 0.4rem;
+    margin: 0.1rem 0.05rem;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.15s;
+    border: 2px solid transparent;
+    user-select: none;
+    font-size: 0.95rem;
+  }
+
+  .taggable:hover { background: #e8e3dc; }
+  .taggable.noun { background: var(--blue-light); color: var(--noun-blue); border-color: var(--noun-blue); font-weight: 600; }
+  .taggable.verb { background: var(--green-light); color: var(--verb-green); border-color: var(--verb-green); font-weight: 600; }
+  .taggable.adj { background: var(--accent-light); color: var(--adj-red); border-color: var(--adj-red); font-weight: 600; }
+
+  .legend {
+    display: flex;
+    gap: 1rem;
+    margin: 0.7rem 0;
+    flex-wrap: wrap;
+    font-size: 0.85rem;
+    font-weight: 500;
+  }
+
+  .legend span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+
+  .legend-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+  }
+
+  /* Case exercise */
+  .sentence-block {
+    padding: 0.8rem 1rem;
+    background: #faf8f5;
+    border-radius: 8px;
+    margin-bottom: 0.8rem;
+    line-height: 1.8;
+    font-size: 0.95rem;
+  }
+
+  .sentence-block b { color: var(--accent); }
+
+  .case-grid {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.4rem 0.75rem;
+    align-items: center;
+    margin-top: 0.5rem;
+  }
+
+  .case-word {
+    font-weight: 600;
+    color: var(--accent);
+    font-size: 0.92rem;
+  }
+
+  select.case-select {
+    padding: 0.4rem 0.6rem;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 0.9rem;
+    background: #faf8f5;
+    cursor: pointer;
+  }
+
+  select.case-select:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+
+  select.correct { border-color: var(--correct) !important; background: var(--green-light) !important; }
+  select.incorrect { border-color: var(--incorrect) !important; background: #fef0ee !important; }
+
+  .horse-hint {
+    display: flex;
+    align-items: stretch;
+    gap: 0.5rem;
+    padding: 0.7rem 0.9rem;
+    background: var(--purple-light);
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    font-size: 0.88rem;
+    border-left: 3px solid var(--purple);
+    color: var(--purple);
+    font-weight: 500;
+  }
+
+  .horse-hint span { font-size: 1.3rem; }
+
+  @media (max-width: 600px) {
+    body { padding: 0 0.5rem 3rem; }
+    .exercise-body { padding: 0 1rem 1.2rem; }
+    .input-row label { min-width: 90px; font-size: 0.9rem; }
+    .case-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Upprifjun í málfræði</h1>
+  <p class="subtitle">7. bekkur · Smelltu á æfingu til að opna hana</p>
+</header>
+
+<div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+
+<!-- ============ 1. Eintala / fleirtala ============ -->
+<div class="exercise open" data-ex="1">
+  <div class="exercise-header" onclick="toggleEx(this)">
+    <div class="exercise-num" id="num1">1</div>
+    <div class="exercise-title">Eintala og fleirtala</div>
+    <span class="chevron">▾</span>
+  </div>
+  <div class="exercise-body">
+    <div class="instructions">Ritaðu orðin í <strong>fleirtölu</strong>.</div>
+    <div class="input-row"><label>sonur →</label><input type="text" data-answer="synir" placeholder="fleirtala…"><span class="feedback"></span></div>
+    <div class="input-row"><label>tá →</label><input type="text" data-answer="tær" placeholder="fleirtala…"><span class="feedback"></span></div>
+    <div class="input-row"><label>bóla →</label><input type="text" data-answer="bólur" placeholder="fleirtala…"><span class="feedback"></span></div>
+    <div class="input-row"><label>tré →</label><input type="text" data-answer="tré" placeholder="fleirtala…"><span class="feedback"></span></div>
+
+    <div class="instructions" style="margin-top:1.2rem;">Ritaðu orðin í <strong>eintölu</strong>.</div>
+    <div class="input-row"><label>töflur →</label><input type="text" data-answer="tafla" placeholder="eintala…"><span class="feedback"></span></div>
+    <div class="input-row"><label>skólar →</label><input type="text" data-answer="skóli" placeholder="eintala…"><span class="feedback"></span></div>
+    <div class="input-row"><label>mæður →</label><input type="text" data-answer="móðir" placeholder="eintala…"><span class="feedback"></span></div>
+    <div class="input-row"><label>námskeið →</label><input type="text" data-answer="námskeið" placeholder="eintala…"><span class="feedback"></span></div>
+    <div class="btn-row">
+      <button class="btn btn-check" onclick="checkInputs(this)">Athuga ✓</button>
+      <button class="btn btn-show" onclick="showAnswers(this)">Sýna svör</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 2. Fallgreining ============ -->
+<div class="exercise" data-ex="2">
+  <div class="exercise-header" onclick="toggleEx(this)">
+    <div class="exercise-num" id="num2">2</div>
+    <div class="exercise-title">Fallgreining</div>
+    <span class="chevron">▾</span>
+  </div>
+  <div class="exercise-body">
+    <div class="horse-hint">
+      <span>🐴</span>
+      <div>Mundu eftir <strong>hestinum</strong>: &nbsp;(Hér er) <strong>nf.</strong> · (Um) <strong>þf.</strong> · (Frá) <strong>þgf.</strong> · (Til) <strong>ef.</strong></div>
+    </div>
+    <div class="instructions">Greindu fall <strong>feitletruðu</strong> orðanna í setningunum hér að neðan.</div>
+    <div class="sentence-block">
+      <b>Krökkunum</b> í <b>hverfinu</b> þykir gaman að hnýta <b>flugur</b>.<br>
+      <b>Jóhanna</b> fór til <b>Ísafjarðar</b> um <b>páskana</b>.
+    </div>
+    <div class="case-grid">
+      <span class="case-word">Krökkunum</span>
+      <select class="case-select" data-answer="þgf."><option value="">– veldu fall –</option><option value="nf.">nf.</option><option value="þf.">þf.</option><option value="þgf.">þgf.</option><option value="ef.">ef.</option></select>
+
+      <span class="case-word">hverfinu</span>
+      <select class="case-select" data-answer="þgf."><option value="">– veldu fall –</option><option value="nf.">nf.</option><option value="þf.">þf.</option><option value="þgf.">þgf.</option><option value="ef.">ef.</option></select>
+
+      <span class="case-word">flugur</span>
+      <select class="case-select" data-answer="þf."><option value="">– veldu fall –</option><option value="nf.">nf.</option><option value="þf.">þf.</option><option value="þgf.">þgf.</option><option value="ef.">ef.</option></select>
+
+      <span class="case-word">Jóhanna</span>
+      <select class="case-select" data-answer="nf."><option value="">– veldu fall –</option><option value="nf.">nf.</option><option value="þf.">þf.</option><option value="þgf.">þgf.</option><option value="ef.">ef.</option></select>
+
+      <span class="case-word">Ísafjarðar</span>
+      <select class="case-select" data-answer="ef."><option value="">– veldu fall –</option><option value="nf.">nf.</option><option value="þf.">þf.</option><option value="þgf.">þgf.</option><option value="ef.">ef.</option></select>
+
+      <span class="case-word">páskana</span>
+      <select class="case-select" data-answer="þf."><option value="">– veldu fall –</option><option value="nf.">nf.</option><option value="þf.">þf.</option><option value="þgf.">þgf.</option><option value="ef.">ef.</option></select>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-check" onclick="checkSelects(this)">Athuga ✓</button>
+      <button class="btn btn-show" onclick="showSelectAnswers(this)">Sýna svör</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 3. Fallbeyging: mynd og sonur ============ -->
+<div class="exercise" data-ex="3">
+  <div class="exercise-header" onclick="toggleEx(this)">
+    <div class="exercise-num" id="num3">3</div>
+    <div class="exercise-title">Fallbeyging – mynd og sonur</div>
+    <span class="chevron">▾</span>
+  </div>
+  <div class="exercise-body">
+    <div class="instructions">Fallbeygðu orðin <strong>mynd</strong> og <strong>sonur</strong> í eintölu og fleirtölu <strong>með greini</strong>.</div>
+
+    <p style="font-weight:600; margin-bottom:0.4rem; color: var(--accent);">mynd (kvk.)</p>
+    <table class="grammar-table">
+      <tr><th></th><th>Eintala</th><th>Fleirtala</th></tr>
+      <tr><td class="label-cell">nf.</td><td><input type="text" data-answer="myndin"></td><td><input type="text" data-answer="myndirnar"></td></tr>
+      <tr><td class="label-cell">þf.</td><td><input type="text" data-answer="myndina"></td><td><input type="text" data-answer="myndirnar"></td></tr>
+      <tr><td class="label-cell">þgf.</td><td><input type="text" data-answer="myndinni"></td><td><input type="text" data-answer="myndunum"></td></tr>
+      <tr><td class="label-cell">ef.</td><td><input type="text" data-answer="myndarinnar"></td><td><input type="text" data-answer="myndanna"></td></tr>
+    </table>
+
+    <p style="font-weight:600; margin: 1rem 0 0.4rem; color: var(--accent);">sonur (kk.)</p>
+    <table class="grammar-table">
+      <tr><th></th><th>Eintala</th><th>Fleirtala</th></tr>
+      <tr><td class="label-cell">nf.</td><td><input type="text" data-answer="sonurinn"></td><td><input type="text" data-answer="synirnir"></td></tr>
+      <tr><td class="label-cell">þf.</td><td><input type="text" data-answer="soninn"></td><td><input type="text" data-answer="synina"></td></tr>
+      <tr><td class="label-cell">þgf.</td><td><input type="text" data-answer="syninum"></td><td><input type="text" data-answer="sonunum"></td></tr>
+      <tr><td class="label-cell">ef.</td><td><input type="text" data-answer="sonarins"></td><td><input type="text" data-answer="sonanna"></td></tr>
+    </table>
+    <div class="btn-row">
+      <button class="btn btn-check" onclick="checkInputs(this)">Athuga ✓</button>
+      <button class="btn btn-show" onclick="showAnswers(this)">Sýna svör</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 4. Orðmyndir – langur ============ -->
+<div class="exercise" data-ex="4">
+  <div class="exercise-header" onclick="toggleEx(this)">
+    <div class="exercise-num" id="num4">4</div>
+    <div class="exercise-title">Réttar orðmyndir</div>
+    <span class="chevron">▾</span>
+  </div>
+  <div class="exercise-body">
+    <div class="instructions">Ritaðu réttar orðmyndir á línurnar. Lýsingarorðið þarf að samræmast kyni nafnorðsins.</div>
+    <div class="input-row"><label>langur bíll (kk.)</label><span style="color:var(--muted); font-size:0.9rem;">— gefið</span></div>
+    <div class="input-row"><label>_______ gata (kvk.)</label><input type="text" data-answer="löng" placeholder="lýsingarorð…"><span class="feedback"></span></div>
+    <div class="input-row"><label>_______ strik (hk.)</label><input type="text" data-answer="langt" placeholder="lýsingarorð…"><span class="feedback"></span></div>
+    <div class="btn-row">
+      <button class="btn btn-check" onclick="checkInputs(this)">Athuga ✓</button>
+      <button class="btn btn-show" onclick="showAnswers(this)">Sýna svör</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 5. Nútíð ============ -->
+<div class="exercise" data-ex="5">
+  <div class="exercise-header" onclick="toggleEx(this)">
+    <div class="exercise-num" id="num5">5</div>
+    <div class="exercise-title">Þátíð → Nútíð</div>
+    <span class="chevron">▾</span>
+  </div>
+  <div class="exercise-body">
+    <div class="instructions">Ritaðu eftirfarandi málsgreinar í <strong>nútíð</strong>.</div>
+    <div class="sentence-block" style="margin-bottom:0.5rem;">
+      <em>Krakkarnir í bekknum fóru saman í bíó. Flestir fylgdust vel með myndinni.</em>
+    </div>
+    <textarea class="answer-area" id="ta5" placeholder="Skrifaðu hér í nútíð…"></textarea>
+    <div class="reveal-box" id="reveal5">
+      <strong>Svar:</strong> Krakkarnir í bekknum fara saman í bíó. Flestir fylgjast vel með myndinni.
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-show" onclick="toggleReveal('reveal5')">Sýna svar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 6. Þátíð ============ -->
+<div class="exercise" data-ex="6">
+  <div class="exercise-header" onclick="toggleEx(this)">
+    <div class="exercise-num" id="num6">6</div>
+    <div class="exercise-title">Nútíð → Þátíð</div>
+    <span class="chevron">▾</span>
+  </div>
+  <div class="exercise-body">
+    <div class="instructions">Ritaðu eftirfarandi málsgreinar í <strong>þátíð</strong>.</div>
+    <div class="sentence-block" style="margin-bottom:0.5rem;">
+      <em>Hafdís leikur á fiðlu á lokatónleikunum. Kennarinn hvetur hana til að standa sig vel.</em>
+    </div>
+    <textarea class="answer-area" id="ta6" placeholder="Skrifaðu hér í þátíð…"></textarea>
+    <div class="reveal-box" id="reveal6">
+      <strong>Svar:</strong> Hafdís lék á fiðlu á lokatónleikunum. Kennarinn hvatti hana til að standa sig vel.
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-show" onclick="toggleReveal('reveal6')">Sýna svar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 7. Stigbreyting ============ -->
+<div class="exercise" data-ex="7">
+  <div class="exercise-header" onclick="toggleEx(this)">
+    <div class="exercise-num" id="num7">7</div>
+    <div class="exercise-title">Stigbreyting lýsingarorða</div>
+    <span class="chevron">▾</span>
+  </div>
+  <div class="exercise-body">
+    <div class="instructions">Stigbreyttu lýsingarorðunum. Fylltu í miðstig og efsta stig.</div>
+    <table class="grammar-table">
+      <tr><th>Frumstig</th><th>Miðstig</th><th>Efsta stig</th></tr>
+      <tr>
+        <td style="font-weight:600;">snöggur</td>
+        <td><input type="text" data-answer="sneggri|snöggari"></td>
+        <td><input type="text" data-answer="sneggstur|snöggastur"></td>
+      </tr>
+      <tr>
+        <td style="font-weight:600;">ungur</td>
+        <td><input type="text" data-answer="yngri"></td>
+        <td><input type="text" data-answer="yngstur"></td>
+      </tr>
+      <tr>
+        <td style="font-weight:600;">vitur</td>
+        <td><input type="text" data-answer="vitrari"></td>
+        <td><input type="text" data-answer="vitrastur"></td>
+      </tr>
+    </table>
+    <div class="btn-row">
+      <button class="btn btn-check" onclick="checkInputs(this)">Athuga ✓</button>
+      <button class="btn btn-show" onclick="showAnswers(this)">Sýna svör</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 8. Orðflokkar í texta ============ -->
+<div class="exercise" data-ex="8">
+  <div class="exercise-header" onclick="toggleEx(this)">
+    <div class="exercise-num" id="num8">8</div>
+    <div class="exercise-title">Orðflokkar í texta</div>
+    <span class="chevron">▾</span>
+  </div>
+  <div class="exercise-body">
+    <div class="instructions">
+      Finndu <strong>fimm nafnorð</strong>, <strong>fjögur sagnorð</strong> og <strong>þrjú lýsingarorð</strong> í textanum.<br>
+      Smelltu á orð til að merkja það. Smelltu aftur til að skipta um flokk.
+    </div>
+    <div class="legend">
+      <span><span class="legend-dot" style="background:var(--noun-blue);"></span> Nafnorð</span>
+      <span><span class="legend-dot" style="background:var(--verb-green);"></span> Sagnorð</span>
+      <span><span class="legend-dot" style="background:var(--adj-red);"></span> Lýsingarorð</span>
+    </div>
+    <div class="text-block" id="taggerBlock"></div>
+    <div style="font-size:0.85rem; color:var(--muted); margin-top:0.3rem;" id="tagCount">Nafnorð: 0/5 · Sagnorð: 0/4 · Lýsingarorð: 0/3</div>
+    <div class="reveal-box" id="reveal8">
+      <strong>Dæmi um svör:</strong><br>
+      <span style="color:var(--noun-blue); font-weight:600;">Nafnorð:</span> Börnin, rútunni, Akraness, fjörunni, mitti, byggðasafnið, borð, skip, heimleiðinni, Hafnarfjarðar<br>
+      <span style="color:var(--verb-green); font-weight:600;">Sagnorð:</span> óku, léku, blotnuðu, var, skoðað, farið, sungið, komu<br>
+      <span style="color:var(--adj-red); font-weight:600;">Lýsingarorð:</span> glöð, kát, gamalt, glaðir, þreyttir
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-show" onclick="toggleReveal('reveal8')">Sýna svör</button>
+      <button class="btn" style="background:var(--border);color:var(--text);" onclick="resetTagger()">Hreinsa</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// Toggle exercise open/close
+function toggleEx(header) {
+  const ex = header.closest('.exercise');
+  ex.classList.toggle('open');
+}
+
+// Check text inputs
+function checkInputs(btn) {
+  const body = btn.closest('.exercise-body');
+  const inputs = body.querySelectorAll('input[data-answer]');
+  let allCorrect = true;
+  inputs.forEach(inp => {
+    const fb = inp.closest('.input-row')
+      ? inp.closest('.input-row').querySelector('.feedback')
+      : null;
+    const val = inp.value.trim().toLowerCase();
+    const answers = inp.dataset.answer.toLowerCase().split('|');
+    if (!val) {
+      inp.className = '';
+      if (fb) { fb.textContent = ''; fb.className = 'feedback'; }
+      allCorrect = false;
+      return;
+    }
+    if (answers.includes(val)) {
+      inp.className = 'correct';
+      if (fb) { fb.textContent = '✓'; fb.className = 'feedback ok'; }
+    } else {
+      inp.className = 'incorrect';
+      if (fb) { fb.textContent = '✗'; fb.className = 'feedback no'; }
+      allCorrect = false;
+    }
+  });
+  const ex = btn.closest('.exercise');
+  const num = ex.querySelector('.exercise-num');
+  if (allCorrect && inputs.length > 0) {
+    num.classList.add('done');
+  }
+  updateProgress();
+}
+
+// Show answers for text inputs
+function showAnswers(btn) {
+  const body = btn.closest('.exercise-body');
+  const inputs = body.querySelectorAll('input[data-answer]');
+  inputs.forEach(inp => {
+    inp.value = inp.dataset.answer.split('|')[0];
+    inp.className = 'correct';
+    const fb = inp.closest('.input-row')
+      ? inp.closest('.input-row').querySelector('.feedback')
+      : null;
+    if (fb) { fb.textContent = '✓'; fb.className = 'feedback ok'; }
+  });
+  const ex = btn.closest('.exercise');
+  ex.querySelector('.exercise-num').classList.add('done');
+  updateProgress();
+}
+
+// Check selects
+function checkSelects(btn) {
+  const body = btn.closest('.exercise-body');
+  const sels = body.querySelectorAll('select[data-answer]');
+  let allCorrect = true;
+  sels.forEach(sel => {
+    const val = sel.value;
+    if (!val) { sel.className = 'case-select'; allCorrect = false; return; }
+    sel.className = val === sel.dataset.answer ? 'case-select correct' : 'case-select incorrect';
+    if (val !== sel.dataset.answer) allCorrect = false;
+  });
+  if (allCorrect) btn.closest('.exercise').querySelector('.exercise-num').classList.add('done');
+  updateProgress();
+}
+
+function showSelectAnswers(btn) {
+  const body = btn.closest('.exercise-body');
+  body.querySelectorAll('select[data-answer]').forEach(sel => {
+    sel.value = sel.dataset.answer;
+    sel.className = 'case-select correct';
+  });
+  btn.closest('.exercise').querySelector('.exercise-num').classList.add('done');
+  updateProgress();
+}
+
+// Toggle reveal boxes
+function toggleReveal(id) {
+  const box = document.getElementById(id);
+  box.style.display = box.style.display === 'block' ? 'none' : 'block';
+  const ex = box.closest('.exercise');
+  ex.querySelector('.exercise-num').classList.add('done');
+  updateProgress();
+}
+
+// Progress bar
+function updateProgress() {
+  const total = document.querySelectorAll('.exercise-num').length;
+  const done = document.querySelectorAll('.exercise-num.done').length;
+  document.getElementById('progressFill').style.width = (done / total * 100) + '%';
+}
+
+// ===== Word tagger =====
+const taggerText = "Börnin óku glöð og kát með rútunni til Akraness og léku sér í fjörunni. Sumir blotnuðu upp að mitti. Síðan var byggðasafnið skoðað og farið um borð í gamalt skip. Á heimleiðinni var sungið hátt. Allir komu glaðir en þreyttir aftur til Hafnarfjarðar.";
+const states = ['', 'noun', 'verb', 'adj'];
+
+function buildTagger() {
+  const block = document.getElementById('taggerBlock');
+  // Split keeping punctuation attached
+  const tokens = taggerText.match(/\S+/g);
+  block.innerHTML = '';
+  tokens.forEach((token, i) => {
+    const span = document.createElement('span');
+    span.className = 'taggable';
+    span.textContent = token;
+    span.dataset.state = '0';
+    span.addEventListener('click', () => {
+      let s = (parseInt(span.dataset.state) + 1) % states.length;
+      span.dataset.state = s;
+      span.className = 'taggable' + (states[s] ? ' ' + states[s] : '');
+      updateTagCount();
+    });
+    block.appendChild(span);
+    block.appendChild(document.createTextNode(' '));
+  });
+}
+
+function updateTagCount() {
+  const nouns = document.querySelectorAll('#taggerBlock .noun').length;
+  const verbs = document.querySelectorAll('#taggerBlock .verb').length;
+  const adjs = document.querySelectorAll('#taggerBlock .adj').length;
+  document.getElementById('tagCount').textContent =
+    `Nafnorð: ${nouns}/5 · Sagnorð: ${verbs}/4 · Lýsingarorð: ${adjs}/3`;
+}
+
+function resetTagger() {
+  document.querySelectorAll('#taggerBlock .taggable').forEach(span => {
+    span.dataset.state = '0';
+    span.className = 'taggable';
+  });
+  updateTagCount();
+}
+
+buildTagger();
+</script>
+</body>
+</html>
